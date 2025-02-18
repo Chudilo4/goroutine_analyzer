@@ -1,0 +1,28 @@
+services:
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+    networks:
+      - test_network
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - test_network
+
+  app:
+    container_name: app
+    ports:
+      - "8070:8070"
+    image: your image
+    networks:
+      - test_network

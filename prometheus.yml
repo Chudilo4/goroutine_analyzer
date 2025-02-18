@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'my-go-app'
+    static_configs:
+      - targets: ['app:8070'] # Порт, на котором ваше приложение экспортирует метрики
