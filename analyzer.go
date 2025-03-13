@@ -1,6 +1,7 @@
 package goroutine_analyzer
 
 import (
+	"context"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
@@ -14,6 +15,7 @@ type GoroutineStats struct {
 	goroutines     map[string]int       // Карта кол-ва запущенных функций
 	serviceName    string               // Имя запущенного сервиса
 	goroutineCount *prometheus.GaugeVec // Сборщик статистики
+	server         *http.Server
 }
 
 // NewGoroutineStats - создать новый менеджер обработки горутин
@@ -76,8 +78,23 @@ func (gs *GoroutineStats) Wait() {
 // pattern - точка входа для prometheus
 // addr - сетевой адрес для прослушивания tcp соединения
 func (gs *GoroutineStats) RunExportMetricPoint(pattern, addr string) error {
+	var server http.Server
+	server.Addr = addr
+
+	gs.server = &server
+
 	http.Handle(pattern, promhttp.Handler())
-	err := http.ListenAndServe(addr, nil)
+	err := gs.server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
+	return nil
+}
+
+// StopExportMetricPoint - Остановка сервера метрики для prometheus.
+// ctx - контекст приложения
+func (gs *GoroutineStats) StopExportMetricPoint(ctx context.Context) error {
+	err := gs.server.Shutdown(ctx)
 	if err != nil {
 		return err
 	}
