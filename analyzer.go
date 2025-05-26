@@ -10,7 +10,7 @@ import (
 
 // GoroutineStats - менеджер горутин
 type GoroutineStats struct {
-	mu             sync.RWMutex         // Мьютекс на чтение и запись горутин
+	mu             sync.Mutex           // Мьютекс на чтение и запись горутин
 	wg             sync.WaitGroup       // Сущность для завершения работы горутин
 	goroutines     map[string]int       // Карта кол-ва запущенных функций
 	serviceName    string               // Имя запущенного сервиса
@@ -57,8 +57,8 @@ func (gs *GoroutineStats) Done(name string) {
 
 // GetMapCount - Получить карту запущенных горутин.
 func (gs *GoroutineStats) GetMapCount() map[string]int {
-	gs.mu.RLock()
-	defer gs.mu.RUnlock()
+	gs.mu.Lock()
+	defer gs.mu.Unlock()
 	return gs.goroutines
 }
 
